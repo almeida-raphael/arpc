@@ -1,0 +1,38 @@
+
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - master
+    tags: []
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.16' ]
+    name: Test with ${{ matrix.go }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: Jerome1337/golint-action@v1.0.2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Run Unit tests
+        run: go test -race -coverprofile=coverage.txt -covermode=atomic github.com/almeida-raphael/aRPC
+
+      - name: Upload Coverage report to CodeCov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
+          flags: unittests
+          name: codecov-openvvar-go-${{ matrix.go }}
+          fail_ci_if_error: true

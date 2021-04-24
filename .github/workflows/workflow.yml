@@ -26,7 +26,7 @@ jobs:
           go-version: ${{ matrix.go }}
 
       - name: Run Unit tests
-        run: go test -race -coverprofile=coverage.txt -covermode=atomic github.com/almeida-raphael/aRPC
+        run: go test -race -coverprofile=coverage.txt -covermode=atomic github.com/almeida-raphael/arpc
 
       - name: Upload Coverage report to CodeCov
         uses: codecov/codecov-action@v1

@@ -1,10 +1,11 @@
 package helpers
 
 import (
-	"github.com/almeida-raphael/aRPC/headers"
-	"github.com/almeida-raphael/aRPC/interfaces"
+	"github.com/almeida-raphael/arpc/headers"
+	"github.com/almeida-raphael/arpc/interfaces"
 )
 
+// SerializeWithHeaders Serialize a given message with it's headers
 func SerializeWithHeaders(
 	messageType uint8, serviceID uint32, procedureID uint16, data interfaces.Serializable,
 )([]byte, error){
@@ -31,6 +32,7 @@ func SerializeWithHeaders(
 	return responseBytes, nil
 }
 
+// DeserializeHeader Deserializes a given message header and returns bytes left
 func DeserializeHeader(data []byte)(*headers.Header, []byte, error){
 	var header headers.Header
 

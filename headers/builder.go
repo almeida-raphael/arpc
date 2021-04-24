@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// BuildHeader generates a new header for a message
 func BuildHeader(messageType uint8, serviceID uint32, procedureID uint16)(*Header, error){
 	uuidBinary, err := uuid.New().MarshalBinary()
 	if err != nil {

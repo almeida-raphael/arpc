@@ -1,4 +1,4 @@
-module github.com/almeida-raphael/aRPC
+module github.com/almeida-raphael/arpc
 
 go 1.16
 

@@ -6,7 +6,7 @@ One of the main focus of this project is being as ergonomic as possible for the 
 
 ### Architecture
 If you want to check our architecture and design choices, check the project paper (link will be available soon).
-
+github.com/almeida-raphael/aRPC
 ### Usage
 ```go
 ```

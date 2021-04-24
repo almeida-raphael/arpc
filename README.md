@@ -6,9 +6,14 @@ One of the main focus of this project is being as ergonomic as possible for the 
 
 ### Architecture
 If you want to check our architecture and design choices, check the project paper (link will be available soon).
+
 ### Usage
 ```go
 ```
+
+### Examples
+If you want examples we have the [aRPC Examples repository](https://github.com/almeida-raphael/arpc_examples), this is a 
+collection of examples to show aRPC features and ease the understanding of new aRPC users and contributors. 
 
 ### WIP
 This project is currently a work in progress and should be not used in production environments.

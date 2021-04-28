@@ -7,7 +7,7 @@ func Hash(s string) uint32 {
 	h := fnv.New32a()
 
 	_, err := h.Write([]byte(s))
-	if err != nil { // This error will neve happen
+	if err != nil { // This error will never happen
 		return 0
 	}
 

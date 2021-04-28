@@ -40,13 +40,13 @@ func (i ColferTail) Error() string {
 }
 
 type Header struct {
-	ID uint16
-
 	MessageType uint8
 
 	ServiceID uint32
 
 	ProcedureID uint16
+
+	PayloadSize uint64
 }
 
 // MarshalTo encodes o as Colfer into buf and returns the number of bytes written.
@@ -54,33 +54,19 @@ type Header struct {
 func (o *Header) MarshalTo(buf []byte) int {
 	var i int
 
-	if x := o.ID; x >= 1<<8 {
-		buf[i] = 0
-		i++
-		buf[i] = byte(x >> 8)
-		i++
-		buf[i] = byte(x)
-		i++
-	} else if x != 0 {
-		buf[i] = 0 | 0x80
-		i++
-		buf[i] = byte(x)
-		i++
-	}
-
 	if x := o.MessageType; x != 0 {
-		buf[i] = 1
+		buf[i] = 0
 		i++
 		buf[i] = x
 		i++
 	}
 
 	if x := o.ServiceID; x >= 1<<21 {
-		buf[i] = 2 | 0x80
+		buf[i] = 1 | 0x80
 		intconv.PutUint32(buf[i+1:], x)
 		i += 5
 	} else if x != 0 {
-		buf[i] = 2
+		buf[i] = 1
 		i++
 		for x >= 0x80 {
 			buf[i] = byte(x | 0x80)
@@ -92,15 +78,31 @@ func (o *Header) MarshalTo(buf []byte) int {
 	}
 
 	if x := o.ProcedureID; x >= 1<<8 {
-		buf[i] = 3
+		buf[i] = 2
 		i++
 		buf[i] = byte(x >> 8)
 		i++
 		buf[i] = byte(x)
 		i++
 	} else if x != 0 {
-		buf[i] = 3 | 0x80
+		buf[i] = 2 | 0x80
 		i++
+		buf[i] = byte(x)
+		i++
+	}
+
+	if x := o.PayloadSize; x >= 1<<49 {
+		buf[i] = 3 | 0x80
+		intconv.PutUint64(buf[i+1:], x)
+		i += 9
+	} else if x != 0 {
+		buf[i] = 3
+		i++
+		for x >= 0x80 {
+			buf[i] = byte(x | 0x80)
+			x >>= 7
+			i++
+		}
 		buf[i] = byte(x)
 		i++
 	}
@@ -114,12 +116,6 @@ func (o *Header) MarshalTo(buf []byte) int {
 // The error return option is headers.ColferMax.
 func (o *Header) MarshalLen() (int, error) {
 	l := 1
-
-	if x := o.ID; x >= 1<<8 {
-		l += 3
-	} else if x != 0 {
-		l += 2
-	}
 
 	if x := o.MessageType; x != 0 {
 		l += 2
@@ -137,6 +133,14 @@ func (o *Header) MarshalLen() (int, error) {
 		l += 3
 	} else if x != 0 {
 		l += 2
+	}
+
+	if x := o.PayloadSize; x >= 1<<49 {
+		l += 9
+	} else if x != 0 {
+		for l += 2; x >= 0x80; l++ {
+			x >>= 7
+		}
 	}
 
 	if l > ColferSizeMax {
@@ -168,26 +172,6 @@ func (o *Header) Unmarshal(data []byte) (int, error) {
 
 	if header == 0 {
 		start := i
-		i += 2
-		if i >= len(data) {
-			goto eof
-		}
-		o.ID = intconv.Uint16(data[start:])
-		header = data[i]
-		i++
-	} else if header == 0|0x80 {
-		start := i
-		i++
-		if i >= len(data) {
-			goto eof
-		}
-		o.ID = uint16(data[start])
-		header = data[i]
-		i++
-	}
-
-	if header == 1 {
-		start := i
 		i++
 		if i >= len(data) {
 			goto eof
@@ -197,7 +181,7 @@ func (o *Header) Unmarshal(data []byte) (int, error) {
 		i++
 	}
 
-	if header == 2 {
+	if header == 1 {
 		start := i
 		i++
 		if i >= len(data) {
@@ -225,7 +209,7 @@ func (o *Header) Unmarshal(data []byte) (int, error) {
 
 		header = data[i]
 		i++
-	} else if header == 2|0x80 {
+	} else if header == 1|0x80 {
 		start := i
 		i += 4
 		if i >= len(data) {
@@ -236,7 +220,7 @@ func (o *Header) Unmarshal(data []byte) (int, error) {
 		i++
 	}
 
-	if header == 3 {
+	if header == 2 {
 		start := i
 		i += 2
 		if i >= len(data) {
@@ -245,13 +229,52 @@ func (o *Header) Unmarshal(data []byte) (int, error) {
 		o.ProcedureID = intconv.Uint16(data[start:])
 		header = data[i]
 		i++
-	} else if header == 3|0x80 {
+	} else if header == 2|0x80 {
 		start := i
 		i++
 		if i >= len(data) {
 			goto eof
 		}
 		o.ProcedureID = uint16(data[start])
+		header = data[i]
+		i++
+	}
+
+	if header == 3 {
+		start := i
+		i++
+		if i >= len(data) {
+			goto eof
+		}
+		x := uint64(data[start])
+
+		if x >= 0x80 {
+			x &= 0x7f
+			for shift := uint(7); ; shift += 7 {
+				b := uint64(data[i])
+				i++
+				if i >= len(data) {
+					goto eof
+				}
+
+				if b < 0x80 || shift == 56 {
+					x |= b << shift
+					break
+				}
+				x |= (b & 0x7f) << shift
+			}
+		}
+		o.PayloadSize = x
+
+		header = data[i]
+		i++
+	} else if header == 3|0x80 {
+		start := i
+		i += 8
+		if i >= len(data) {
+			goto eof
+		}
+		o.PayloadSize = intconv.Uint64(data[start:])
 		header = data[i]
 		i++
 	}

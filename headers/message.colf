@@ -1,8 +1,8 @@
 package headers
 
 type Header struct {
-    ID uint16
     MessageType uint8
     ServiceID  uint32
     ProcedureID uint16
+    PayloadSize uint64
 }

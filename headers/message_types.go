@@ -5,6 +5,7 @@ type MessageType uint8
 
 // Available message types
 const (
-	Result = iota
+	Result MessageType = iota
 	Call
+	Error
 )

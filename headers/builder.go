@@ -6,8 +6,6 @@ import (
 	"github.com/almeida-raphael/arpc/helpers"
 )
 
-var headerSize = Size()
-
 // BuildHeader generates a new header for a message
 func BuildHeader(messageType MessageType, serviceID uint32, procedureID uint16, payloadSize uint64) *Header {
 	return &Header{
@@ -20,7 +18,12 @@ func BuildHeader(messageType MessageType, serviceID uint32, procedureID uint16, 
 
 // FromStream generate a header from bytes from a stream
 func FromStream(stream channel.Stream)(*Header, error){
-	headerBytes, err := helpers.ReadN(stream, headerSize)
+	headerSize, err := helpers.ReadN(stream, 1)
+	if err != nil || len(headerSize) != 1{
+		return nil, fmt.Errorf("cannot get header size: %v", err)
+	}
+
+	headerBytes, err := helpers.ReadN(stream, uint64(headerSize[0]))
 	if err != nil{
 		return nil, fmt.Errorf("error on header reading: %v", err)
 	}

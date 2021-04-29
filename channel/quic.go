@@ -113,3 +113,12 @@ func (q *QUICRPC) Connect() (Session, error) {
 	}
 	return &QUICSession{session: session}, nil
 }
+
+func NewQUICChannel(address string, port int, tlsConfig *tls.Config, quicConfig *quic.Config)RPC{
+	return &QUICRPC{
+		address:   address,
+		port:      port,
+		tlsConfig: tlsConfig,
+		config:    quicConfig,
+	}
+}

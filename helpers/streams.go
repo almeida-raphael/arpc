@@ -9,8 +9,8 @@ import (
 func ReadN(reader io.Reader, size uint64)([]byte, error){
 	// TODO: Check if this can hang forever
 	result := make([]byte, size)
-	readBytesCount := 0
-	for uint64(len(result)) < size {
+	var readBytesCount uint64 = 0
+	for readBytesCount < size {
 		nConsumed, err := reader.Read(result[readBytesCount:])
 		if err != nil {
 			if errors.Is(err, io.EOF) {
@@ -18,7 +18,7 @@ func ReadN(reader io.Reader, size uint64)([]byte, error){
 			}
 			return nil, err
 		}
-		readBytesCount += nConsumed
+		readBytesCount += uint64(nConsumed)
 	}
 	return result, nil
 }

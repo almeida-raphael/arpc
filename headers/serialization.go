@@ -17,7 +17,7 @@ func AddHeaders(messageType MessageType, serviceID uint32, procedureID uint16, d
 	var responseBytes = make([]byte, 1 + uint64(headerSize) + dataSize)
 	responseBytes[0] = uint8(headerSize)
 	header.MarshalTo(responseBytes[1:headerSize+1])
-	copy(data, responseBytes[headerSize+1:])
+	copy(responseBytes[headerSize+1:], data)
 
 	return responseBytes, nil
 }

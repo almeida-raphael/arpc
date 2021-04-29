@@ -50,10 +50,10 @@ func callProcedure(
 		var errorResponse errors.Error
 		errorResponse.Message = fmt.Sprintf("%v", err)
 
-		var errorBytes []byte
-		errorResponse.MarshalTo(errorBytes)
-
-		result = errorBytes
+		result, err = errorResponse.MarshalBinary()
+		if err != nil {
+			return nil, 0, err
+		}
 		messageType = headers.Error
 	}else{
 		messageType = headers.Result

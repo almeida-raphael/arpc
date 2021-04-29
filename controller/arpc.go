@@ -45,7 +45,7 @@ func callProcedure(
 		return nil, 0, err
 	}
 
-	result, err := procedure(data)
+	result, err := procedure(data) //TODO: Handle panics
 	if err != nil{
 		var errorResponse errors.Error
 		errorResponse.Message = fmt.Sprintf("%v", err)
@@ -62,12 +62,7 @@ func callProcedure(
 	return result, messageType, nil
 }
 
-func (c *RPC)_processRemoteCalls(ctx context.Context, session channel.Session){
-	stream, err := session.AcceptStream(ctx)
-	if err != nil{
-		c.logger.Printf( "error accepting stream: %v", err)
-		return
-	}
+func (c *RPC)_processRemoteCalls(stream channel.Stream){
 	defer func() {
 		if err := stream.Close(); err != nil {
 			c.logger.Printf( "error closing stream: %v", err)
@@ -77,7 +72,7 @@ func (c *RPC)_processRemoteCalls(ctx context.Context, session channel.Session){
 	header, err := headers.FromStream(stream)
 	if err != nil{
 		c.logger.Printf( "%v", err)
-		return
+		return // TODO: Check if we should respond error for the client
 	}
 
 	service, ok := c.services[header.ServiceID]
@@ -87,12 +82,12 @@ func (c *RPC)_processRemoteCalls(ctx context.Context, session channel.Session){
 			data, messageType, err := callProcedure(stream, header, procedure)
 			if err != nil{
 				c.logger.Printf( "error calling rpc procedure: %v", err)
-				return
+				return // TODO: Send Error response for the client
 			}
 			err = c.sendRPCResponse(stream, messageType, header.ServiceID, header.ProcedureID, data)
 			if err != nil{
 				c.logger.Printf( "error sending rpc response: %v", err)
-				return
+				return // TODO: Send Error response for the client
 			}
 
 			return // Success
@@ -100,12 +95,17 @@ func (c *RPC)_processRemoteCalls(ctx context.Context, session channel.Session){
 	}
 
 	c.logger.Printf( "cannot find right procedure to call")
-	return
+	return // TODO: Send Error response for the client
 }
 
 func (c *RPC)processRemoteCalls(ctx context.Context, session channel.Session){
 	for {
-		go c._processRemoteCalls(ctx, session)
+		stream, err := session.AcceptStream(ctx)
+		if err != nil{
+			c.logger.Printf( "error accepting stream: %v", err)
+			return
+		}
+		go c._processRemoteCalls(stream) // TODO: Check a way to handle context here
 	}
 }
 
@@ -138,6 +138,7 @@ func (c *RPC)StartServer(ctx context.Context)error{
 	}()
 
 	for {
+		// TODO: Cancellation on this context should break this for
 		session, err := listener.Accept(ctx)
 		if err != nil {
 			c.logger.Printf( "error on accept connection: %v", err)

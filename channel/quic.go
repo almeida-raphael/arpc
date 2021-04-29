@@ -114,6 +114,7 @@ func (q *QUICRPC) Connect() (Session, error) {
 	return &QUICSession{session: session}, nil
 }
 
+// NewQUICChannel Creates a channel using QUIC as transport layer
 func NewQUICChannel(address string, port int, tlsConfig *tls.Config, quicConfig *quic.Config)RPC{
 	return &QUICRPC{
 		address:   address,

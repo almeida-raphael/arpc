@@ -112,7 +112,7 @@ func (c *RPC)processRemoteCalls(ctx context.Context, session channel.Session){
 func (c *RPC) sendRPCResponse(
 	stream channel.Stream, messageType headers.MessageType, serviceID uint32, procedureID uint16, request []byte,
 )error {
-	requestBytes, err := helpers.AddHeaders(messageType, serviceID, procedureID, request)
+	requestBytes, err := headers.AddHeaders(messageType, serviceID, procedureID, request)
 	if err != nil{
 		return err
 	}
@@ -188,7 +188,7 @@ func (c *RPC)SendRPCCall(
 		}
 	}()
 
-	requestBytes, err := helpers.SerializeWithHeaders(headers.Call, serviceID, procedureID, request)
+	requestBytes, err := headers.SerializeWithHeaders(headers.Call, serviceID, procedureID, request)
 	if err != nil{
 		return err
 	}

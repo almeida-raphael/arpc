@@ -1,15 +1,14 @@
-package helpers
+package headers
 
 import (
-	"github.com/almeida-raphael/arpc/headers"
 	"github.com/almeida-raphael/arpc/interfaces"
 )
 
 // AddHeaders add headers to already serialized data
-func AddHeaders(messageType headers.MessageType, serviceID uint32, procedureID uint16, data []byte)([]byte, error){
+func AddHeaders(messageType MessageType, serviceID uint32, procedureID uint16, data []byte)([]byte, error){
 	dataSize := uint64(len(data))
 
-	header := headers.BuildHeader(messageType, serviceID, procedureID, dataSize)
+	header := BuildHeader(messageType, serviceID, procedureID, dataSize)
 	headerSize, err := header.MarshalLen()
 	if err != nil {
 		return nil, err
@@ -25,14 +24,14 @@ func AddHeaders(messageType headers.MessageType, serviceID uint32, procedureID u
 
 // SerializeWithHeaders Serialize a given message with it's headers
 func SerializeWithHeaders(
-	messageType headers.MessageType, serviceID uint32, procedureID uint16, data interfaces.Serializable,
+	messageType MessageType, serviceID uint32, procedureID uint16, data interfaces.Serializable,
 )([]byte, error){
 	dataSize, err := data.MarshalLen()
 	if err != nil {
 		return nil, err
 	}
 
-	header := headers.BuildHeader(messageType, serviceID, procedureID, uint64(dataSize))
+	header := BuildHeader(messageType, serviceID, procedureID, uint64(dataSize))
 	headerSize, err := header.MarshalLen()
 	if err != nil {
 		return nil, err

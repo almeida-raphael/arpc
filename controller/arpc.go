@@ -84,6 +84,7 @@ func (c *RPC)_processRemoteCalls(stream channel.Stream){
 				c.logger.Printf( "error calling rpc procedure: %v", err)
 				return // TODO: Send Error response for the client
 			}
+			// TODO: We can optimize the response removing serviceID and procedureID from response Headers
 			err = c.sendRPCResponse(stream, messageType, header.ServiceID, header.ProcedureID, data)
 			if err != nil{
 				c.logger.Printf( "error sending rpc response: %v", err)
